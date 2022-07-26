@@ -1,0 +1,155 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: azure-cosmosdb-composition
+  labels:
+    crossplane.io/xrd: znosqldbs.runtime.madgrape.com
+    provider: default
+spec:
+  compositeTypeRef:
+    apiVersion: runtime.madgrape.com/v1alpha1
+    kind: ZNoSQLDb
+  writeConnectionSecretsToNamespace: crossplane-system
+  resources:
+  - name: cosmosdb-account
+    base:
+      apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
+      kind: Account
+      spec:
+        forProvider: 
+          kind: GlobalDocumentDB 
+          offerType: Standard 
+          location: "westus"
+          backup: 
+          - type: Continuous 
+          consistencyPolicy:
+          - consistencyLevel: Session 
+          resourceGroupName: replaced-by-patches
+          geoLocation:
+          - failoverPriority: 0 
+            location: "westus" 
+            zoneRedundant: False 
+        providerConfigRef:
+          name: default
+        writeConnectionSecretToRef:
+          name: replaced-by-patches # secret name
+          namespace: replaced-by-patches # OpenShift project
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: "metadata.uid"
+      toFieldPath: "spec.writeConnectionSecretToRef.name"
+      transforms:
+        - type: string
+          string:
+            fmt: "%s-cosmosdb-conn"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: spec.writeConnectionSecretToRef.namespace
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigName
+      toFieldPath: spec.providerConfigRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.resourceGroup
+      toFieldPath: spec.forProvider.resourceGroupName
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: spec.parameters.location
+    #   toFieldPath: spec.forProvider.location
+    #   transforms:
+    #   - type: map
+    #     map:
+    #       us-west: West US
+    #       us-east: East US
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: spec.parameters.location
+    #   toFieldPath: spec.forProvider.geoLocation[0].location
+    #   transforms:
+    #   - type: map
+    #     map:
+    #       us-west: West US
+    #       us-east: East US
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.annotations[crossplane.io/external-name]
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-account"
+    connectionDetails:
+    - name: primary_connection
+      fromConnectionSecretKey: attribute.primary_connection
+    - name: primary_readonly_connection
+      fromConnectionSecretKey: attribute.primary_readonly_connection
+    - name: secondary_connection
+      fromConnectionSecretKey: attribute.secondary_connection
+    - name: secondary_readonly_connection
+      fromConnectionSecretKey: attribute.secondary_readonly_connection
+
+
+
+
+
+
+  - name: cosmosdb-sqldatabase
+    base:
+      apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
+      kind: SQLDatabase
+      spec:
+        forProvider:
+          resourceGroupName: replaced-by-patches
+          accountNameSelector:
+            matchControllerRef: true
+          throughput: 400
+        providerConfigRef:
+          name: default
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.resourceGroup
+      toFieldPath: spec.forProvider.resourceGroupName
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.annotations[crossplane.io/external-name]
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-database"
+
+
+
+  - name: cosmosdb-sqlcontainer
+    base:
+      apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
+      kind: SQLContainer
+      spec:
+        forProvider:
+          resourceGroupName: replaced-by-patches
+          accountNameSelector:
+            matchControllerRef: true
+          databaseNameSelector:
+            matchControllerRef: true
+          indexingPolicy:
+          - excludedPath:
+            - path: /excluded/?
+            includedPath:
+            - path: /*
+            - path: /included/?
+            indexingMode: Consistent
+          partitionKeyPath: /definition/id
+          partitionKeyVersion: 1
+          throughput: 400
+          uniqueKey:
+          - paths:
+            - /definition/idlong
+            - /definition/idshort
+        providerConfigRef:
+          name: default
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.resourceGroup
+      toFieldPath: spec.forProvider.resourceGroupName
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.annotations[crossplane.io/external-name]
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-container"

@@ -1,0 +1,14 @@
+apiVersion: runtime.madgrape.com/v1alpha1
+kind: NoSQLDb
+metadata:
+  name: noctestdb
+  annotations:
+    crossplane.io/external-name: noctestdb
+spec:
+  providerConfigRef:
+    name: default
+  parameters:
+    location: westus
+    resourceGroup: crossplanetest
+    partitionKeyPath: /id
+    providerConfigName: default

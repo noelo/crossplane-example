@@ -45,7 +45,7 @@ spec:
       key: key
 ```
 
-# Manual Resource Installation
+# Installation via Crossplane individual resources 
 
 ## **ResourceGroup->Account->Database->Container**
 
@@ -147,3 +147,31 @@ metadata:
     provider: default
 ```
 
+
+# Installation via Crossplane Resource Composition
+
+## **ResourceGroup->Account->Database->Container**
+
+### Install the CRD
+```
+oc apply -f noc-cosmosdb-xrd.yml
+oc get CompositeResourceDefinition
+```
+
+### Install the Composite definition
+```
+oc apply -f noc-cosmosdb-composite.yaml 
+oc describe composition.apiextensions.crossplane.io/azure-cosmosdb-composition
+```
+
+### Create a claim for a resource
+```
+oc apply -f noc-cosmosdb-claim.yaml
+oc describe nosqldb.runtime.madgrape.com/noctestdb
+```
+
+### Nuke from Orbit
+```
+oc delete NoSQLDb noctestdb
+oc delete Composition azure-cosmosdb-composition
+```

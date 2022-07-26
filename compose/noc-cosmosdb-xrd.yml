@@ -1,0 +1,44 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: znosqldbs.runtime.madgrape.com
+spec:
+  group: runtime.madgrape.com
+  names:
+    kind: ZNoSQLDb
+    plural: znosqldbs
+  claimNames:
+    kind: NoSQLDb
+    plural: nosqldbs
+  connectionSecretKeys:
+    - primary_connection
+    - primary_readonly_connection
+    - secondary_connection
+    - secondary_readonly_connection
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  resourceGroup:
+                    type: string
+                  providerConfigName:
+                    type: string
+                  location:
+                    type: string
+                    enum: ["westus", "us-east"]
+                required:
+                - resourceGroup
+                - providerConfigName
+                - location
+            required:
+            - parameters
