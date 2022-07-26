@@ -1,0 +1,16 @@
+apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
+kind: SQLDatabase
+spec:
+  forProvider:
+    resourceGroupName: noctestjetrg
+    accountName: azure-cosmosdb-account
+    throughput: 400
+  providerConfigRef:
+    name: default
+  writeConnectionSecretToRef:
+    name: cosmosdb-sql-secret # secret name
+    namespace: crossplane-system
+metadata:
+  name: azure-cosmosdb-sqldb
+  labels:
+    provider: default

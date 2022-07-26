@@ -1,0 +1,25 @@
+apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
+kind: Account
+metadata:
+  name: azure-cosmosdb-account
+  labels:
+    provider: default
+spec:
+  forProvider: 
+    kind: GlobalDocumentDB 
+    location: westus 
+    offerType: Standard 
+    resourceGroupName: noctestjetrg
+    backup: 
+    - type: Continuous 
+    consistencyPolicy:
+    - consistencyLevel: Session 
+    geoLocation:
+    - failoverPriority: 0 
+      location: "westus" 
+      zoneRedundant: False 
+  providerConfigRef:
+    name: default
+  writeConnectionSecretToRef:
+    name: cosmosdb-secret
+    namespace: crossplane-system

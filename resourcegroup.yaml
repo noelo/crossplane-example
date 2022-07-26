@@ -1,0 +1,9 @@
+apiVersion: azure.jet.crossplane.io/v1alpha2
+kind: ResourceGroup
+metadata:
+  name: noctestjetrg
+spec:
+  forProvider:
+    location: westus
+  providerConfigRef: 
+    name: default

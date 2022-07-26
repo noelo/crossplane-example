@@ -1,0 +1,30 @@
+apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
+kind: SQLContainer
+spec:
+  forProvider:
+    resourceGroupName: noctestjetrg
+    accountName: azure-cosmosdb-account
+    databaseName: azure-cosmosdb-sqldb
+    indexingPolicy:
+    - excludedPath:
+      - path: /excluded/?
+      includedPath:
+      - path: /*
+      - path: /included/?
+      indexingMode: Consistent
+    partitionKeyPath: /definition/id
+    partitionKeyVersion: 1
+    throughput: 400
+    uniqueKey:
+    - paths:
+      - /definition/idlong
+      - /definition/idshort
+  providerConfigRef:
+    name: default
+  writeConnectionSecretToRef:
+    name: cosmosdb-sql-container-secret # secret name
+    namespace: crossplane-system
+metadata:
+  name: azure-cosmosdb-sqldb-container
+  labels:
+    provider: default
