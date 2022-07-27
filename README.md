@@ -1,3 +1,10 @@
+# Azure CosmosDB, CrossPlane, Quarkus & ServiceBinding Operator
+
+## A simple application to demonstrate
+1. Automated creation of Azure native resources using Crossplane 
+1. Binding of these resources into a simple application via Service Binding Operator
+
+
 # CrossPlane setup and configuration
 ## Prereqs
 1. SUBSC_ID=xxxxxxx
@@ -45,109 +52,6 @@ spec:
       key: key
 ```
 
-# Installation via Crossplane individual resources 
-
-## **ResourceGroup->Account->Database->Container**
-
-
-## Set up the Resource Group
-### Resourcegroup.yaml
-```
-apiVersion: azure.jet.crossplane.io/v1alpha2
-kind: ResourceGroup
-metadata:
-  name: noctestjetrg
-spec:
-  forProvider:
-    location: westus
-  providerConfigRef: 
-    name: default
-```
-
-
-## Set up the CosmosDB Account
-### base-account.yaml
-```
-apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
-kind: Account
-metadata:
-  name: azure-cosmosdb-account
-  labels:
-    provider: default
-spec:
-  forProvider: 
-    kind: GlobalDocumentDB 
-    location: westus 
-    offerType: Standard 
-    resourceGroupName: noctestjetrg
-    backup: 
-    - type: Continuous 
-    consistencyPolicy:
-    - consistencyLevel: Session 
-    geoLocation:
-    - failoverPriority: 0 
-      location: "westus" 
-      zoneRedundant: False 
-  providerConfigRef:
-    name: default
-  writeConnectionSecretToRef:
-    name: cosmosdb-secret
-    namespace: crossplane-system
-```
-
-* Connection Strings will be store in the secret named **cosmosdb-secret** 
-
-## Set up the Database
-### base-sqldb.yaml
-```
-apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
-kind: SQLDatabase
-spec:
-  forProvider:
-    resourceGroupName: noctestjetrg
-    accountName: azure-cosmosdb-account
-    throughput: 400
-  providerConfigRef:
-    name: default
-metadata:
-  name: azure-cosmosdb-sqldb
-  labels:
-    provider: default
-```
-
-## Set up the Container
-### base-sql-container.yaml
-```
-apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
-kind: SQLContainer
-spec:
-  forProvider:
-    resourceGroupName: noctestjetrg
-    accountName: azure-cosmosdb-account
-    databaseName: azure-cosmosdb-sqldb
-    indexingPolicy:
-    - excludedPath:
-      - path: /excluded/?
-      includedPath:
-      - path: /*
-      - path: /included/?
-      indexingMode: Consistent
-    partitionKeyPath: /definition/id
-    partitionKeyVersion: 1
-    throughput: 400
-    uniqueKey:
-    - paths:
-      - /definition/idlong
-      - /definition/idshort
-  providerConfigRef:
-    name: default
-metadata:
-  name: azure-cosmosdb-sqldb-container
-  labels:
-    provider: default
-```
-
-
 # Installation via Crossplane Resource Composition
 
 ## **ResourceGroup->Account->Database->Container**
@@ -164,15 +68,48 @@ oc apply -f noc-cosmosdb-composite.yaml
 oc describe composition.apiextensions.crossplane.io/azure-cosmosdb-composition
 ```
 
-### Create a claim for a resource
+### Create a claim for the set of resource
 ```
 oc apply -f noc-cosmosdb-claim.yaml
 oc describe nosqldb.runtime.madgrape.com/noctestdb
 ```
 
-### Nuke from Orbit
+**NOTE** The connection settings will be store in a secret called _**noctestdb-cosmosdb-conn**_ . 
+This is the secret referenced in the service-binding resource.
+
+# Service Binding Operator
+
+## Install Operator Lifecycle Manager
 ```
-oc delete NoSQLDb noctestdb
-oc delete Composition azure-cosmosdb-composition
-oc delete CompositeResourceDefinition znosqldbs.runtime.madgrape.com
+curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.21.2/install.sh | bash -s v0.21.2
 ```
+
+## Install the Service Binding Operator
+```
+kubectl create -f https://operatorhub.io/install/service-binding-operator.yaml
+```
+
+## Create a sample application
+```
+kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4
+```
+
+## Create and apply a service binding
+```
+apiVersion: servicebinding.io/v1alpha3
+kind: ServiceBinding
+metadata:
+  name: nosqldb-binding
+spec:
+  type: runtime.madgrape.com/connection
+  service:
+    apiVersion: v1
+    kind: Secret
+    name: noctestdb-cosmosdb-conn
+  workload:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hello-node
+```
+
+

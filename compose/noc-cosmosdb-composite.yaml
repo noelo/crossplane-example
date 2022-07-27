@@ -11,6 +11,24 @@ spec:
     kind: ZNoSQLDb
   writeConnectionSecretsToNamespace: crossplane-system
   resources:
+  - name : resource-group
+    base:
+      apiVersion: azure.jet.crossplane.io/v1alpha2
+      kind: ResourceGroup
+      metadata:
+        name: replaced-by-patches
+      spec:
+        forProvider:
+          location: replaced-by-patches
+        providerConfigRef: 
+          name: default
+    patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.parameters.resourceGroup
+        toFieldPath: metadata.name
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.parameters.location
+        toFieldPath: spec.forProvider.location
   - name: cosmosdb-account
     base:
       apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
@@ -19,7 +37,7 @@ spec:
         forProvider: 
           kind: GlobalDocumentDB 
           offerType: Standard 
-          location: "westus"
+          location: replaced-by-patches
           backup: 
           - type: Continuous 
           consistencyPolicy:
@@ -32,11 +50,11 @@ spec:
         providerConfigRef:
           name: default
         writeConnectionSecretToRef:
-          name: replaced-by-patches # secret name
-          namespace: replaced-by-patches # OpenShift project
+          name: replaced-by-patches 
+          namespace: replaced-by-patches
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: "metadata.name"
+      fromFieldPath: spec.claimRef.name
       toFieldPath: "spec.writeConnectionSecretToRef.name"
       transforms:
         - type: string
@@ -51,6 +69,9 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.resourceGroup
       toFieldPath: spec.forProvider.resourceGroupName
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.location
+      toFieldPath: spec.forProvider.location
     # - type: FromCompositeFieldPath
     #   fromFieldPath: spec.parameters.location
     #   toFieldPath: spec.forProvider.location
@@ -74,15 +95,16 @@ spec:
       - type: string
         string:
           fmt: "%s-account"
-    connectionDetails:
-    - name: primary_connection
-      fromConnectionSecretKey: attribute.primary_connection
-    - name: primary_readonly_connection
-      fromConnectionSecretKey: attribute.primary_readonly_connection
-    - name: secondary_connection
-      fromConnectionSecretKey: attribute.secondary_connection
-    - name: secondary_readonly_connection
-      fromConnectionSecretKey: attribute.secondary_readonly_connection
+    type: servicebinding.io/azure-cosmosdb
+    # connectionDetails:
+    # - name: primary_connection
+    #   fromConnectionSecretKey: attribute.primary_connection
+    # - name: primary_readonly_connection
+    #   fromConnectionSecretKey: attribute.primary_readonly_connection
+    # - name: secondary_connection
+    #   fromConnectionSecretKey: attribute.secondary_connection
+    # - name: secondary_readonly_connection
+    #   fromConnectionSecretKey: attribute.secondary_readonly_connection
 
   - name: cosmosdb-sqldatabase
     base:

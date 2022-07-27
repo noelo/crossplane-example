@@ -9,6 +9,6 @@ spec:
     name: default
   parameters:
     location: westus
-    resourceGroup: crossplanetest
+    resourceGroup: crossplanetest2
     partitionKeyPath: /id
     providerConfigName: default

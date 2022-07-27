@@ -1,0 +1,14 @@
+apiVersion: servicebinding.io/v1alpha3
+kind: ServiceBinding
+metadata:
+  name: nosqldb-binding
+spec:
+  type: runtime.madgrape.com/connection
+  service:
+    apiVersion: v1
+    kind: Secret
+    name: noctestdb-cosmosdb-conn
+  workload:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hello-node
