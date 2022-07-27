@@ -36,7 +36,7 @@ spec:
           namespace: replaced-by-patches # OpenShift project
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: "metadata.uid"
+      fromFieldPath: "metadata.name"
       toFieldPath: "spec.writeConnectionSecretToRef.name"
       transforms:
         - type: string
@@ -84,11 +84,6 @@ spec:
     - name: secondary_readonly_connection
       fromConnectionSecretKey: attribute.secondary_readonly_connection
 
-
-
-
-
-
   - name: cosmosdb-sqldatabase
     base:
       apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
@@ -112,8 +107,6 @@ spec:
       - type: string
         string:
           fmt: "%s-database"
-
-
 
   - name: cosmosdb-sqlcontainer
     base:

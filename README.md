@@ -174,4 +174,5 @@ oc describe nosqldb.runtime.madgrape.com/noctestdb
 ```
 oc delete NoSQLDb noctestdb
 oc delete Composition azure-cosmosdb-composition
+oc delete CompositeResourceDefinition znosqldbs.runtime.madgrape.com
 ```
