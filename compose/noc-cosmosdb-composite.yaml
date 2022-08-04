@@ -10,6 +10,7 @@ spec:
     apiVersion: runtime.madgrape.com/v1alpha1
     kind: ZNoSQLDb
   writeConnectionSecretsToNamespace: crossplane-system
+  
   resources:
   - name : resource-group
     base:
@@ -21,7 +22,7 @@ spec:
         forProvider:
           location: replaced-by-patches
         providerConfigRef: 
-          name: default
+          name: replaced-by-patches
     patches:
       - type: FromCompositeFieldPath
         fromFieldPath: spec.parameters.resourceGroup
@@ -29,6 +30,9 @@ spec:
       - type: FromCompositeFieldPath
         fromFieldPath: spec.parameters.location
         toFieldPath: spec.forProvider.location
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.parameters.providerConfigName
+        toFieldPath: spec.providerConfigRef.name
   - name: cosmosdb-account
     base:
       apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
@@ -48,9 +52,8 @@ spec:
             location: "westus" 
             zoneRedundant: False 
         providerConfigRef:
-          name: default
+          name: replaced-by-patches
         writeConnectionSecretToRef:
-          name: replaced-by-patches 
           namespace: replaced-by-patches
     patches:
     - type: FromCompositeFieldPath
@@ -95,16 +98,33 @@ spec:
       - type: string
         string:
           fmt: "%s-account"
-    type: servicebinding.io/azure-cosmosdb
-    # connectionDetails:
-    # - name: primary_connection
-    #   fromConnectionSecretKey: attribute.primary_connection
-    # - name: primary_readonly_connection
-    #   fromConnectionSecretKey: attribute.primary_readonly_connection
-    # - name: secondary_connection
-    #   fromConnectionSecretKey: attribute.secondary_connection
-    # - name: secondary_readonly_connection
-    #   fromConnectionSecretKey: attribute.secondary_readonly_connection
+    connectionDetails:
+    - name: primary_connection
+      fromConnectionSecretKey: attribute.connection_string.0
+    - name: primary_readonly_connection
+      fromConnectionSecretKey: attribute.connection_string.2
+    - name: secondary_connection
+      fromConnectionSecretKey: attribute.connection_string.1
+    - name: secondary_readonly_connection
+      fromConnectionSecretKey: attribute.connection_string.3
+    # - name: container_name
+    #   fromFieldPath: metadata.annotations[crossplane.io/external-name]
+    #   transforms:
+    #   - type: string
+    #     string:
+    #       fmt: "%s-container"
+    # - name: database_name
+    #   fromFieldPath: metadata.annotations[crossplane.io/external-name]
+    #   transforms:
+    #   - type: string
+    #     string:
+    #       fmt: "%s-database"
+    # - name: account_name
+    #   fromFieldPath: metadata.annotations[crossplane.io/external-name]
+    #   transforms:
+    #   - type: string
+    #     string:
+    #       fmt: "%s-account"
 
   - name: cosmosdb-sqldatabase
     base:
@@ -117,8 +137,11 @@ spec:
             matchControllerRef: true
           throughput: 400
         providerConfigRef:
-          name: default
+          name: replaced-by-patches
     patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigName
+      toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.resourceGroup
       toFieldPath: spec.forProvider.resourceGroupName
@@ -156,8 +179,11 @@ spec:
             - /definition/idlong
             - /definition/idshort
         providerConfigRef:
-          name: default
+          name: replaced-by-patches
     patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigName
+      toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.resourceGroup
       toFieldPath: spec.forProvider.resourceGroupName

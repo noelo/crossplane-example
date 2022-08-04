@@ -7,7 +7,7 @@ spec:
   service:
     apiVersion: v1
     kind: Secret
-    name: noctestdb-cosmosdb-conn
+    name: noctestdb2-cosmosdb-conn
   workload:
     apiVersion: apps/v1
     kind: Deployment

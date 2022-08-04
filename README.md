@@ -14,7 +14,7 @@
 
 ## Create service principal and grant permissions
 1. ```az ad sp create-for-rbac --sdk-auth --role Owner --scopes /subscriptions/${SUBSC_ID} > "creds.json"```
-1. ```export AZURE_CLIENT_ID==$(jq -r ".clientId" < "./creds.json")```
+1. ```export AZURE_CLIENT_ID=$(jq -r ".clientId" < "./creds.json")```
 1. RW_ALL_APPS=1cda74f2-2616-4834-b122-5cb1b07f8a59
 1. RW_DIR_DATA=78c8a3c8-a07e-4b9e-af1b-b5ccab50a175
 1. AAD_GRAPH_API=00000002-0000-0000-c000-000000000000
@@ -58,19 +58,19 @@ spec:
 
 ### Install the CRD
 ```
-oc apply -f noc-cosmosdb-xrd.yml
+oc apply -f compose/noc-cosmosdb-xrd.yml
 oc get CompositeResourceDefinition
 ```
 
 ### Install the Composite definition
 ```
-oc apply -f noc-cosmosdb-composite.yaml 
+oc apply -f compose/noc-cosmosdb-composite.yaml 
 oc describe composition.apiextensions.crossplane.io/azure-cosmosdb-composition
 ```
 
 ### Create a claim for the set of resource
 ```
-oc apply -f noc-cosmosdb-claim.yaml
+oc apply -f compose/noc-cosmosdb-claim.yaml
 oc describe nosqldb.runtime.madgrape.com/noctestdb
 ```
 
