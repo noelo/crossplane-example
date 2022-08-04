@@ -15,8 +15,6 @@ spec:
     - primary_readonly_connection
     - secondary_connection
     - secondary_readonly_connection
-    # - container_name
-    # - database_name
   versions:
   - name: v1alpha1
     served: true
@@ -42,5 +40,3 @@ spec:
                 - resourceGroup
                 - providerConfigName
                 - location
-            required:
-            - parameters

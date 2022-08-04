@@ -1,7 +1,7 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: azure-cosmosdb-composition
+  name: nocsqldb-cosmosdb-composition
   labels:
     crossplane.io/xrd: znosqldbs.runtime.madgrape.com
     provider: default
@@ -57,7 +57,7 @@ spec:
           namespace: replaced-by-patches
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.claimRef.name
+      fromFieldPath: metadata.annotations[crossplane.io/external-name]
       toFieldPath: "spec.writeConnectionSecretToRef.name"
       transforms:
         - type: string
@@ -75,22 +75,6 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.location
       toFieldPath: spec.forProvider.location
-    # - type: FromCompositeFieldPath
-    #   fromFieldPath: spec.parameters.location
-    #   toFieldPath: spec.forProvider.location
-    #   transforms:
-    #   - type: map
-    #     map:
-    #       us-west: West US
-    #       us-east: East US
-    # - type: FromCompositeFieldPath
-    #   fromFieldPath: spec.parameters.location
-    #   toFieldPath: spec.forProvider.geoLocation[0].location
-    #   transforms:
-    #   - type: map
-    #     map:
-    #       us-west: West US
-    #       us-east: East US
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.annotations[crossplane.io/external-name]
       toFieldPath: metadata.annotations[crossplane.io/external-name]
@@ -107,25 +91,6 @@ spec:
       fromConnectionSecretKey: attribute.connection_string.1
     - name: secondary_readonly_connection
       fromConnectionSecretKey: attribute.connection_string.3
-    # - name: container_name
-    #   fromFieldPath: metadata.annotations[crossplane.io/external-name]
-    #   transforms:
-    #   - type: string
-    #     string:
-    #       fmt: "%s-container"
-    # - name: database_name
-    #   fromFieldPath: metadata.annotations[crossplane.io/external-name]
-    #   transforms:
-    #   - type: string
-    #     string:
-    #       fmt: "%s-database"
-    # - name: account_name
-    #   fromFieldPath: metadata.annotations[crossplane.io/external-name]
-    #   transforms:
-    #   - type: string
-    #     string:
-    #       fmt: "%s-account"
-
   - name: cosmosdb-sqldatabase
     base:
       apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
