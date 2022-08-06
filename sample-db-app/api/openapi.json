@@ -1,0 +1,78 @@
+{
+    "openapi" : "3.0.3",
+    "info" : {
+      "title" : "hello-cosmos API",
+      "version" : "1.0.1-SNAPSHOT"
+    },
+    "paths" : {
+      "/hello/create" : {
+        "post" : {
+          "tags" : [ "Hello Cosmos Resource" ],
+          "requestBody" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HelloCountry"
+                }
+              }
+            }
+          },
+          "responses" : {
+            "200" : {
+              "description" : "OK",
+              "content" : {
+                "text/plain" : {
+                  "schema" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/hello/{country}" : {
+        "get" : {
+          "tags" : [ "Hello Cosmos Resource" ],
+          "parameters" : [ {
+            "name" : "country",
+            "in" : "path",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          } ],
+          "responses" : {
+            "200" : {
+              "description" : "OK",
+              "content" : {
+                "text/plain" : {
+                  "schema" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components" : {
+      "schemas" : {
+        "HelloCountry" : {
+          "type" : "object",
+          "properties" : {
+            "id" : {
+              "type" : "string"
+            },
+            "hello" : {
+              "type" : "string"
+            },
+            "partitionKey" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
