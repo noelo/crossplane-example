@@ -36,7 +36,10 @@ spec:
                   location:
                     type: string
                     enum: ["westus", "us-east"]
+                  partitionKeyPath:
+                    type: string
                 required:
                 - resourceGroup
                 - providerConfigName
                 - location
+                - partitionKeyPath

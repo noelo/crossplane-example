@@ -39,6 +39,7 @@ spec:
       kind: Account
       spec:
         forProvider: 
+          enableFreeTier: true
           kind: GlobalDocumentDB 
           offerType: Standard 
           location: replaced-by-patches
@@ -129,26 +130,18 @@ spec:
             matchControllerRef: true
           databaseNameSelector:
             matchControllerRef: true
-          indexingPolicy:
-          - excludedPath:
-            - path: /excluded/?
-            includedPath:
-            - path: /*
-            - path: /included/?
-            indexingMode: Consistent
-          partitionKeyPath: /definition/id
+          partitionKeyPath: replaced-by-patches
           partitionKeyVersion: 1
           throughput: 400
-          uniqueKey:
-          - paths:
-            - /definition/idlong
-            - /definition/idshort
         providerConfigRef:
           name: replaced-by-patches
     patches:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.providerConfigName
       toFieldPath: spec.providerConfigRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.partitionKeyPath
+      toFieldPath: spec.forProvider.partitionKeyPath
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.resourceGroup
       toFieldPath: spec.forProvider.resourceGroupName

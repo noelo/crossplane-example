@@ -2,14 +2,14 @@ apiVersion: runtime.madgrape.com/v1alpha1
 kind: NoSQLDb
 metadata:
   namespace: crossplane-system
-  name: noctestdb3
+  name: nosqltestdb
   annotations:
-    crossplane.io/external-name: noctestdb3
+    crossplane.io/external-name: nosqltestdb
 spec:
   parameters:
     location: westus
-    resourceGroup: crossplanetest3
+    resourceGroup: crossplanetest
     partitionKeyPath: /id
     providerConfigName: default
   writeConnectionSecretToRef:
-    name: noctestdb3-connection-details
+    name: nosqltestdb-connection-details
