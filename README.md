@@ -139,6 +139,13 @@ spec:
 kubectl -f crossplane-example/service-binding/sample-app-service-binding.yml
 ```
 
+### To test
+```
+curl http://<route>/hello/testtest
+```
+
+Use Data Explorer in the Azure console to validate values are being inserted into the database
+
 
 ### Under the covers
 The service binding operator binds the secret into the pod location defined by the environment variable SERVICE_BINDING_ROOT
