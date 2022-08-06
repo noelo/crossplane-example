@@ -7,6 +7,7 @@
 
 # CrossPlane setup and configuration
 ## Prereqs
+1. az login
 1. SUBSC_ID=xxxxxxx
 1. ```az account set -s ${SUBSC_ID}```
 1. az account show
@@ -54,27 +55,31 @@ spec:
 
 # Installation via Crossplane Resource Composition
 
+The installation of the CRD and Composite definition only need to be done once.
+
+A _claim_ is used to drive the individual creation of the set of resources.
+
 ## **ResourceGroup->Account->Database->Container**
 
 ### Install the CRD
 ```
-oc apply -f compose/noc-cosmosdb-xrd.yml
+oc apply -f compose/nosqldb-cosmosdb-xrd.yml
 oc get CompositeResourceDefinition
 ```
 
 ### Install the Composite definition
 ```
-oc apply -f compose/noc-cosmosdb-composite.yaml 
+oc apply -f compose/nosqldb-cosmosdb-composite.yaml 
 oc describe composition.apiextensions.crossplane.io/azure-cosmosdb-composition
 ```
 
 ### Create a claim for the set of resource
 ```
-oc apply -f compose/noc-cosmosdb-claim.yaml
+oc apply -f compose/nosqldb-cosmosdb-claim.yaml
 oc describe nosqldb.runtime.madgrape.com/noctestdb
 ```
 
-**NOTE** The connection settings will be store in a secret called _**noctestdb-cosmosdb-conn**_ . 
+**NOTE** The connection settings will be store in a secret called _**nosqltestdb-connection-details**_ . 
 This is the secret referenced in the service-binding resource.
 
 # Service Binding Operator
@@ -91,10 +96,28 @@ kubectl create -f https://operatorhub.io/install/service-binding-operator.yaml
 
 ## Create a sample application
 ```
-kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4
+cd  sample-db-app
+
+## compile build and push the image to your registry
+quarkus build -Dquarkus.container-image.build=true -Dquarkus.container-image.push=true
+
+##Deploy the kubernetes resources
+cd target/kubernetes
+
+kubectl apply -f kubernetes.yml
 ```
 
-## Create and apply a service binding
+## Pod crashes with Crashloop backoff 
+
+```
+Failed to load config value of type class java.lang.String for: quarkus.service-binding.nosqldb-binding.primary_readonly_connectionFailed to load config value of type class java.lang.String for: quarkus.service-binding.nosqldb-binding.primary_connectionFailed to load config value of type class java.lang.String for: quarkus.service-binding.nosqldb-binding.secondary_connectionFailed to load config value of type class java.lang.String for: quarkus.service-binding.nosqldb-binding.secondary_readonly_connection
+```
+
+
+The reason for this is that we have to bind the _Crossplane_ created secrets into the _Pod_. 
+
+## Now create and deploy the Service Binding resource
+
 ```
 apiVersion: servicebinding.io/v1alpha3
 kind: ServiceBinding
@@ -105,11 +128,42 @@ spec:
   service:
     apiVersion: v1
     kind: Secret
-    name: noctestdb-cosmosdb-conn
+    name: nosqltestdb-connection-details
   workload:
     apiVersion: apps/v1
     kind: Deployment
-    name: hello-node
+    name: helloworldcosmos
+```
+
+```
+kubectl -f crossplane-example/service-binding/sample-app-service-binding.yml
+```
+
+
+### Under the covers
+The service binding operator binds the secret into the pod location defined by the environment variable SERVICE_BINDING_ROOT
+
+```
+oc describe pod helloworldcosmos-556cfc9448-dvpm7|grep -i binding
+      SERVICE_BINDING_ROOT:  /bindings
+      /bindings/nosqldb-binding from nosqldb-binding (rw)
+  nosqldb-binding:
+    SecretName:  nosqldb-binding-b4d29a16
+```
+
+The Quarkus Runtime loads any secrets found in that location as long as service binding is enabled in the applications.properties
+```
+quarkus.kubernetes-service-binding.enabled=true
+```
+
+The contents of these secrets are then made avaialble to the Quarkus configuration system and can be accessed in the code.
+
+See __sample-db-app/src/main/java/com/madgrape/demo/config/CrossPlaneSecretBinding.java__
+```
+public class CrossPlaneSecretBinding {
+
+    @ConfigProperty(name = "quarkus.service-binding.nosqldb-binding.primary_connection")
+    String primaryConn;
 ```
 
 
