@@ -1,11 +1,10 @@
-# Installation using individual Crossplane resource definitions 
+# Installation using individual CrossPlane resource definitions
 
 ## **ResourceGroup->Account->Database->Container**
 
+### Set up the Resource Group
 
-## Set up the Resource Group
-### Resourcegroup.yaml
-```
+```yaml
 apiVersion: azure.jet.crossplane.io/v1alpha2
 kind: ResourceGroup
 metadata:
@@ -13,14 +12,15 @@ metadata:
 spec:
   forProvider:
     location: westus
-  providerConfigRef: 
+  providerConfigRef:
     name: default
 ```
 
-
 ## Set up the CosmosDB Account
-### base-account.yaml
-```
+
+See [base-account.yml](base/base-account.yml)
+
+```yaml
 apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
 kind: Account
 metadata:
@@ -28,19 +28,19 @@ metadata:
   labels:
     provider: default
 spec:
-  forProvider: 
-    kind: GlobalDocumentDB 
-    location: westus 
-    offerType: Standard 
+  forProvider:
+    kind: GlobalDocumentDB
+    location: westus
+    offerType: Standard
     resourceGroupName: noctestjetrg
-    backup: 
-    - type: Continuous 
+    backup:
+    - type: Continuous
     consistencyPolicy:
-    - consistencyLevel: Session 
+    - consistencyLevel: Session
     geoLocation:
-    - failoverPriority: 0 
-      location: "westus" 
-      zoneRedundant: False 
+    - failoverPriority: 0
+      location: "westus"
+      zoneRedundant: False
   providerConfigRef:
     name: default
   writeConnectionSecretToRef:
@@ -48,11 +48,13 @@ spec:
     namespace: crossplane-system
 ```
 
-* Connection Strings will be store in the secret named **cosmosdb-secret** 
+* Connection Strings will be store in the secret named **cosmosdb-secret**
 
 ## Set up the Database
-### base-sqldb.yaml
-```
+
+See [base-sqldb.yml](base/base-sqldb.yml)
+
+```yaml
 apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
 kind: SQLDatabase
 spec:
@@ -69,8 +71,10 @@ metadata:
 ```
 
 ## Set up the Container
-### base-sql-container.yaml
-```
+
+See [base-sql-container.yml](base/base-sql-container.yml)
+
+```yaml
 apiVersion: cosmosdb.azure.jet.crossplane.io/v1alpha2
 kind: SQLContainer
 spec:
@@ -100,9 +104,10 @@ metadata:
     provider: default
 ```
 
-### Nuke from Orbit
-```
-oc delete NoSQLDb noctestdb
-oc delete Composition azure-cosmosdb-composition
-oc delete CompositeResourceDefinition znosqldbs.runtime.madgrape.com
+## Nuke from Orbit
+
+```bash
+kubectl delete NoSQLDb noctestdb
+kubectl delete Composition azure-cosmosdb-composition
+kubectl delete CompositeResourceDefinition znosqldbs.runtime.madgrape.com
 ```
